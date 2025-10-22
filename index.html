@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Smart Car ESP32</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { touch-action: manipulation; }
+    .screen { display: none; }
+    .active { display: flex; }
+    #splash-screen {
+      background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ee7752, #e73c7e);
+      background-size: 400% 400%;
+      animation: gradient 10s ease infinite;
+    }
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .control-button:active { transform: scale(0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  </style>
+</head>
+<body class="bg-gray-900 text-white font-sans overflow-hidden">
+
+  <!-- Pantalla de Bienvenida -->
+  <div id="splash-screen" class="screen active fixed inset-0 flex-col justify-center items-center text-center">
+    <div class="w-24 h-24 mb-6 text-6xl animate-pulse">&#128663;</div>
+    <h1 class="text-3xl font-bold tracking-wider">Smart Car</h1>
+    <p class="text-lg text-gray-200">Interfaz de Control</p>
+  </div>
+
+  <!-- Menú Principal -->
+  <div id="menu-screen" class="screen fixed inset-0 flex-col justify-center items-center p-6 space-y-4">
+    <h2 class="text-2xl font-bold mb-4">Menú Principal</h2>
+    <button data-screen="phase1-screen" data-phase="fase1" class="menu-button w-full max-w-sm bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">Fase 1: Atrás y Adelante</button>
+    <button data-screen="phase2-screen" data-phase="fase2" class="menu-button w-full max-w-sm bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">Fase 2: Control Remoto &#128241;</button>
+    <button data-screen="phase3-screen" data-phase="fase3" class="menu-button w-full max-w-sm bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">Fase 3: Modo Autónomo</button>
+    <button data-screen="phase4-screen" data-phase="fase4" class="menu-button w-full max-w-sm bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">Fase 4: Implementación IA</button>
+  </div>
+
+  <!-- Pantallas de Fases -->
+  <div id="phase1-screen" class="screen fixed inset-0 flex-col justify-center items-center p-6 text-center">
+    <h2 class="text-2xl font-bold mb-4">Fase 1: Atrás y Adelante</h2>
+    <p class="mb-6">El carro ejecutará su rutina de movimiento pre-programada.</p>
+    <button class="back-button w-full max-w-xs bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">Volver al Menú</button>
+  </div>
+
+  <div id="phase3-screen" class="screen fixed inset-0 flex-col justify-center items-center p-6 text-center">
+    <h2 class="text-2xl font-bold mb-4">Fase 3: Sensores</h2>
+    <p class="mb-6">El carro se moverá de forma autónoma, evitando obstáculos.</p>
+    <button class="back-button w-full max-w-xs bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">Volver al Menú</button>
+  </div>
+
+  <div id="phase4-screen" class="screen fixed inset-0 flex-col justify-center items-center p-6 text-center space-y-4">
+    <h2 class="text-2xl font-bold mb-2">Fase 4: Implementación IA</h2>
+    <p class="mb-4">El carro ejecutará su lógica de IA basada en detección de color.</p>
+    <label for="colorSelect" class="block text-lg font-semibold mb-2">🎯 Selecciona el color objetivo:</label>
+    <select id="colorSelect" class="bg-gray-800 text-white px-4 py-2 rounded-lg">
+      <option value="red">🔴 Rojo</option>
+      <option value="green">🟢 Verde</option>
+      <option value="blue">🔵 Azul</option>
+      <option value="yellow">🟡 Amarillo</option>
+      <option value="purple">🟣 Morado</option>
+      <option value="orange">🟠 Naranja</option>
+    </select>
+    <button id="sendColorBtn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">Enviar color a IA</button>
+    <button class="back-button w-full max-w-xs bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">Volver al Menú</button>
+  </div>
+
+  <!-- Control Remoto (Fase 2) -->
+  <div id="phase2-screen" class="screen fixed inset-0 flex-col justify-between items-center p-4">
+    <h2 class="text-xl font-bold mt-2">Control Remoto</h2>
+    <div class="grid grid-cols-3 gap-4 w-full max-w-xs">
+      <div></div>
+      <button id="btn-forward" class="control-button bg-cyan-500 rounded-2xl p-8 text-4xl shadow-lg">&#11014;&#65039;</button>
+      <div></div>
+      <button id="btn-left" class="control-button bg-cyan-500 rounded-2xl p-8 text-4xl shadow-lg">&#11013;&#65039;</button>
+      <button id="btn-stop" class="control-button bg-red-600 rounded-2xl p-8 text-4xl shadow-lg">&#9209;&#65039;</button>
+      <button id="btn-right" class="control-button bg-cyan-500 rounded-2xl p-8 text-4xl shadow-lg">&#10145;&#65039;</button>
+      <div></div>
+      <button id="btn-backward" class="control-button bg-cyan-500 rounded-2xl p-8 text-4xl shadow-lg">&#11015;&#65039;</button>
+      <div></div>
+    </div>
+    <button class="back-button w-full max-w-xs bg-gray-600 hover:bg-gray-700 py-3 mt-4 rounded-lg">Volver al Menú</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const screens = document.querySelectorAll('.screen');
+      const menuButtons = document.querySelectorAll('.menu-button');
+      const backButtons = document.querySelectorAll('.back-button');
+
+      setTimeout(() => { showScreen('menu-screen'); }, 2500);
+
+      function showScreen(screenId) {
+        screens.forEach(screen => {
+          screen.classList.remove('active');
+          if (screen.id === screenId) screen.classList.add('active');
+        });
+      }
+
+      async function sendCommand(type, value) {
+        try {
+          await fetch(`http://10.177.146.54/command?${type}=${value}`);
+        } catch (e) {
+          console.error("Fallo al enviar comando:", e);
+          alert("⚠️ Error al conectar con el ESP32");
+        }
+      }
+
+      menuButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const screenId = button.dataset.screen;
+          const phase = button.dataset.phase;
+          showScreen(screenId);
+          sendCommand('phase', phase);
+        });
+      });
+
+      backButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          showScreen('menu-screen');
+          sendCommand('phase', 'repo');
+        });
+      });
+
+      const controlButtons = {
+        'btn-forward': 'forward',
+        'btn-backward': 'backward',
+        'btn-left': 'left',
+        'btn-right': 'right',
+        'btn-stop': 'stop'
+      };
+
+      for (const [id, move] of Object.entries(controlButtons)) {
+        const btn = document.getElementById(id);
+        if(btn){
+          
+          const sendMove = () => sendCommand('move',move);
+          const sendStop = () => sendCommand('move', 'stop');
+
+          btn.addEventListener('mousedown', sendMove, {passive: true});
+          btn.addEventListener('touchstart', sendMove, {passive:true});
+
+          if(move !== 'stop'){
+            btn.addEventListener('mouseup', sendStop, { passive: true });
+            btn.addEventListener('mouseleave', sendStop, { passive: true });
+            btn.addEventListener('touchend', sendStop, { passive: true });
+          }
+
+        }
+      }
+      
+      document.getElementById("sendColorBtn").addEventListener("click", async () => {
+        const color = document.getElementById("colorSelect").value;
+        await sendCommand("color", color);
+        alert (`🎯 Color "${color}" enviado al ESP32`);
+      });
+
+    });
+
+  </script>
+  
+</html>
+  
